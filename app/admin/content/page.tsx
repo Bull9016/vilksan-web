@@ -341,11 +341,11 @@ export default function AdminContent() {
             const res = await uploadImage(formData);
             if (res.secure_url) {
                 // Update local state
-                const newItems = gridItems.map(item => item.id === id ? { ...item, image_url: res.secure_url } : item);
+                const newItems = gridItems.map(item => item.id === id ? { ...item, image_url: res.secure_url! } : item);
                 setGridItems(newItems);
 
                 // Persist image immediately
-                await updateGridItem(id, { image_url: res.secure_url });
+                await updateGridItem(id, { image_url: res.secure_url! });
                 toast.success("Image uploaded");
             }
         } catch (e) {
