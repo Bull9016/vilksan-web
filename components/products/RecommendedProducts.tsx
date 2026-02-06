@@ -50,29 +50,41 @@ export default function RecommendedProducts({ products }: RecommendedProductsPro
                     </div>
                 </div>
 
-                <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex gap-6">
+                <div className="overflow-visible" ref={emblaRef}>
+                    <div className="flex gap-4 md:gap-8">
                         {products.map((product) => (
-                            <div key={product.id} className="flex-[0_0_80%] md:flex-[0_0_40%] lg:flex-[0_0_25%] min-w-0">
+                            <div key={product.id} className="flex-[0_0_85%] md:flex-[0_0_40%] lg:flex-[0_0_25%] min-w-0">
                                 <Link href={`/products/${product.slug || product.id}`} className="group block">
-                                    <div className="aspect-[3/4] relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden mb-4">
-                                        {product.media && product.media[0] && (
+                                    <div className="aspect-[3/4] relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden mb-4 rounded-sm">
+                                        {(product.cover_image || (product.media && product.media[0])) && (
                                             <Image
-                                                src={product.media[0]}
+                                                src={product.cover_image || product.media[0]}
                                                 alt={product.title}
                                                 fill
                                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
-                                                sizes="(max-width: 768px) 80vw, (max-width: 1200px) 40vw, 25vw"
+                                                sizes="(max-width: 768px) 85vw, (max-width: 1200px) 40vw, 25vw"
                                             />
                                         )}
                                         {product.stock <= 0 && (
-                                            <div className="absolute top-2 right-2 bg-neutral-900 text-white text-[10px] uppercase font-bold px-2 py-1">
+                                            <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white text-[10px] uppercase font-bold px-3 py-1.5 tracking-widest">
                                                 Sold Out
                                             </div>
                                         )}
+                                        {/* Mock discount badge for demo since we don't have discount field yet */}
+                                        <div className="absolute top-3 right-3 bg-black/90 dark:bg-white/90 backdrop-blur-sm text-white dark:text-black text-[10px] font-bold px-3 py-1.5 rounded-full">
+                                            -20%
+                                        </div>
                                     </div>
-                                    <h3 className="font-bold text-sm mb-1">{product.title}</h3>
-                                    <p className="text-neutral-500 font-mono text-xs">${product.price.toFixed(2)}</p>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-bold text-sm mb-1 uppercase tracking-wider">{product.title}</h3>
+                                            <p className="text-xs text-neutral-500">{product.collection_id || "Collection"}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-mono text-sm font-bold">₹{(product.price * 0.8).toLocaleString('en-IN')}</p>
+                                            <p className="font-mono text-xs text-neutral-400 line-through">₹{product.price.toLocaleString('en-IN')}</p>
+                                        </div>
+                                    </div>
                                 </Link>
                             </div>
                         ))}

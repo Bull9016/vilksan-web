@@ -87,15 +87,15 @@ export default function ProductActions({ product, variants }: { product: Product
             toast.success("Order placed successfully!");
             // In a real app we'd redirect to success page
         } catch (error) {
-            console.error(error);
             const message = error instanceof Error ? error.message : "Failed to place order";
 
             if (message.includes("User must be logged in")) {
                 toast.error("Please log in to place an order");
-                router.push("/auth/login?redirect=/products"); // Adjust path as needed
+                router.push("/login?redirect=/products");
                 return;
             }
 
+            console.error(error);
             toast.error(message);
         } finally {
             setIsBuying(false);

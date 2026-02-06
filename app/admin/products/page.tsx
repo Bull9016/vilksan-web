@@ -74,8 +74,8 @@ export default function AdminProducts() {
                                     <td className="p-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden relative flex-shrink-0">
-                                                {product.media && product.media[0] && (
-                                                    <Image src={product.media[0]} alt={product.title} fill className="object-cover" />
+                                                {(product.cover_image || (product.media && product.media[0])) && (
+                                                    <Image src={product.cover_image || product.media[0]} alt={product.title} fill className="object-cover" />
                                                 )}
                                             </div>
                                             <div>
@@ -87,7 +87,7 @@ export default function AdminProducts() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4 font-mono">${product.price}</td>
+                                    <td className="p-4 font-mono">₹{product.price}</td>
                                     <td className="p-4">{product.stock}</td>
                                     <td className="p-4">
                                         <span className={`text-xs px-2 py-1 rounded-full ${product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

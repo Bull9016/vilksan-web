@@ -509,59 +509,132 @@ export default function AdminContent() {
                                     onChange={(e) => updateSlide(currentSlideIndex, { bgText: e.target.value })}
                                     className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2 font-display text-xl font-bold tracking-tighter mb-4"
                                 />
-                                <div className="grid grid-cols-5 gap-2">
+                                <div className="space-y-4">
                                     {/* Styles for Bg Text */}
-                                    {['fontSize', 'tilt', 'x', 'y', 'color'].map(attr => (
-                                        <div key={attr}>
-                                            <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">{attr}</label>
-                                            {attr === 'color' ? (
-                                                <input
-                                                    type="color"
-                                                    value={currentSlide.styles.bgText?.color || "#000000"}
-                                                    onChange={(e) => updateSlideStyle(currentSlideIndex, 'bgText', { color: e.target.value })}
-                                                    className="w-full h-8 cursor-pointer"
-                                                />
-                                            ) : (
-                                                <input
-                                                    type={attr === 'fontSize' ? 'text' : 'number'}
-                                                    value={currentSlide.styles.bgText?.[attr] || ''}
-                                                    onChange={(e) => updateSlideStyle(currentSlideIndex, 'bgText', { [attr]: e.target.value })}
-                                                    className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none"
-                                                />
-                                            )}
-                                        </div>
-                                    ))}
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {['fontSize', 'tilt', 'x', 'y', 'color'].map(attr => (
+                                            <div key={attr}>
+                                                <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">{attr}</label>
+                                                {attr === 'color' ? (
+                                                    <input
+                                                        type="color"
+                                                        value={currentSlide.styles.bgText?.color || "#000000"}
+                                                        onChange={(e) => updateSlideStyle(currentSlideIndex, 'bgText', { color: e.target.value })}
+                                                        className="w-full h-8 cursor-pointer"
+                                                    />
+                                                ) : (
+                                                    <input
+                                                        type={attr === 'fontSize' ? 'text' : 'number'}
+                                                        value={currentSlide.styles.bgText?.[attr] || ''}
+                                                        onChange={(e) => updateSlideStyle(currentSlideIndex, 'bgText', { [attr]: e.target.value })}
+                                                        className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none"
+                                                    />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Font Selection */}
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Font Family</label>
+                                        <select
+                                            value={currentSlide.styles.bgText?.fontFamily || 'var(--font-inter)'}
+                                            onChange={(e) => updateSlideStyle(currentSlideIndex, 'bgText', { fontFamily: e.target.value })}
+                                            className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none"
+                                        >
+                                            <option value="var(--font-inter)">Inter (Modern)</option>
+                                            <option value="var(--font-playfair)">Playfair Display (Elegant)</option>
+                                            <option value="var(--font-oswald)">Oswald (Bold Condensed)</option>
+                                            <option value="var(--font-courier)">Courier Prime (Mono)</option>
+                                            <option value="var(--font-cinzel)">Cinzel (Luxury)</option>
+                                            <option value="var(--font-montserrat)">Montserrat (Geometric)</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Subline & Badge */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Small Badge Controls */}
                                 <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4">
                                     <label className="block text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Small Badge</label>
                                     <input
                                         type="text"
                                         value={currentSlide.badge}
                                         onChange={(e) => updateSlide(currentSlideIndex, { badge: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2 text-sm mb-2"
+                                        className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2 text-sm mb-2 font-bold"
                                     />
-                                    {/* Simplified styles for badge */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <input placeholder="Color" type="color" className="w-full h-6" value={currentSlide.styles.badge?.color || '#000000'} onChange={e => updateSlideStyle(currentSlideIndex, 'badge', { color: e.target.value })} />
-                                        <input placeholder="Y Offset" type="number" className="w-full text-xs px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border rounded" value={currentSlide.styles.badge?.y || ''} onChange={e => updateSlideStyle(currentSlideIndex, 'badge', { y: e.target.value })} />
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        <div>
+                                            <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Color</label>
+                                            <input type="color" className="w-full h-8 cursor-pointer" value={currentSlide.styles.badge?.color || '#000000'} onChange={e => updateSlideStyle(currentSlideIndex, 'badge', { color: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Layer</label>
+                                            <select
+                                                className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none h-8"
+                                                value={currentSlide.styles.badge?.layer || 'front'}
+                                                onChange={e => updateSlideStyle(currentSlideIndex, 'badge', { layer: e.target.value })}
+                                            >
+                                                <option value="front">Front (Overlay)</option>
+                                                <option value="behind">Back (Behind Image)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['fontSize', 'x', 'y'].map(attr => (
+                                            <div key={attr}>
+                                                <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">{attr === 'fontSize' ? 'Size' : attr}</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder={attr === 'fontSize' ? 'px' : 'px'}
+                                                    className="w-full text-xs px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border rounded"
+                                                    value={currentSlide.styles.badge?.[attr] || ''}
+                                                    onChange={e => updateSlideStyle(currentSlideIndex, 'badge', { [attr]: e.target.value })}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+
+                                {/* Subline Controls */}
                                 <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4">
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Subline</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Subline (Main Text)</label>
                                     <textarea
                                         rows={2}
                                         value={currentSlide.subline}
                                         onChange={(e) => updateSlide(currentSlideIndex, { subline: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2 text-xs mb-2"
+                                        className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2 text-xs mb-2 font-display font-bold"
                                     />
-                                    {/* Simplified styles for subline */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <input placeholder="Color" type="color" className="w-full h-6" value={currentSlide.styles.subline?.color || '#000000'} onChange={e => updateSlideStyle(currentSlideIndex, 'subline', { color: e.target.value })} />
-                                        <input placeholder="Y Offset" type="number" className="w-full text-xs px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border rounded" value={currentSlide.styles.subline?.y || ''} onChange={e => updateSlideStyle(currentSlideIndex, 'subline', { y: e.target.value })} />
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        <div>
+                                            <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Color</label>
+                                            <input type="color" className="w-full h-8 cursor-pointer" value={currentSlide.styles.subline?.color || '#000000'} onChange={e => updateSlideStyle(currentSlideIndex, 'subline', { color: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Layer</label>
+                                            <select
+                                                className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none h-8"
+                                                value={currentSlide.styles.subline?.layer || 'front'}
+                                                onChange={e => updateSlideStyle(currentSlideIndex, 'subline', { layer: e.target.value })}
+                                            >
+                                                <option value="front">Front (Overlay)</option>
+                                                <option value="behind">Back (Behind Image)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['fontSize', 'x', 'y'].map(attr => (
+                                            <div key={attr}>
+                                                <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">{attr === 'fontSize' ? 'Size' : attr}</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder={attr === 'fontSize' ? 'px' : 'px'}
+                                                    className="w-full text-xs px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border rounded"
+                                                    value={currentSlide.styles.subline?.[attr] || ''}
+                                                    onChange={e => updateSlideStyle(currentSlideIndex, 'subline', { [attr]: e.target.value })}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

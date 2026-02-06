@@ -1,12 +1,7 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export type OrderItem = {
     productId: string;
@@ -42,6 +37,8 @@ type AddressSnapshot = {
 
 export async function createOrder(items: OrderItem[], totalAmount: number, shippingAddress: AddressSnapshot) {
     if (!items || items.length === 0) throw new Error("No items in order");
+
+    const supabase = await createClient();
 
     // Get User to attach ID
     const { data: { user } } = await supabase.auth.getUser();
@@ -117,6 +114,8 @@ export async function createOrder(items: OrderItem[], totalAmount: number, shipp
 export async function getProductStats(productId: string) {
     // We need to query orders that contain this productId in their items JSON
     // Supabase JSON filtering: items @> '[{"productId": "..."}]'
+
+    const supabase = await createClient();
 
     try {
         const { data: orders, error } = await supabase

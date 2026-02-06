@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2, Check } from "lucide-react";
+import { subscribeToNewsletter } from "@/app/actions/newsletter";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type ContentItem = { value: string; style: any };
 type FooterContent = Record<string, ContentItem>;
@@ -41,6 +44,25 @@ export default function Footer({ content }: { content?: FooterContent }) {
         { label: "Shipping & Payments", href: "/shipping" },
         { label: "Contacts", href: "/contacts" }
     ];
+
+    const [email, setEmail] = useState("");
+    const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus("loading");
+        try {
+            await subscribeToNewsletter(email);
+            setStatus("success");
+            toast.success("Subscribed to newsletter");
+            setEmail("");
+        } catch (error) {
+            toast.error("Failed to subscribe");
+            setStatus("idle");
+        }
+    };
 
     return (
         <footer className="bg-black text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden">
@@ -83,7 +105,7 @@ export default function Footer({ content }: { content?: FooterContent }) {
                             </div>
                         </div>
                         <p className="text-neutral-600 text-[10px] uppercase tracking-widest">
-                            &copy; {new Date().getFullYear()} Vilksan. All rights reserved.
+                            &copy; <span suppressHydrationWarning>{new Date().getFullYear()}</span> Vilksan. All rights reserved.
                         </p>
                     </div>
 
@@ -116,14 +138,21 @@ export default function Footer({ content }: { content?: FooterContent }) {
                         <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
                             Newsletter
                         </h4>
-                        <form className="group relative">
+                        <form onSubmit={handleSubscribe} className="group relative">
                             <input
                                 type="email"
                                 placeholder="EMAIL"
-                                className="w-full bg-transparent border-b border-neutral-800 py-3 text-xs font-bold uppercase tracking-widest text-white outline-none focus:border-white transition-colors placeholder:text-neutral-600"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                disabled={status !== "idle"}
+                                className="w-full bg-transparent border-b border-neutral-800 py-3 text-xs font-bold uppercase tracking-widest text-white outline-none focus:border-white transition-colors placeholder:text-neutral-600 disabled:opacity-50"
                             />
-                            <button className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-white transition-colors">
-                                <ArrowRight size={16} />
+                            <button
+                                type="submit"
+                                disabled={status !== "idle"}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-white transition-colors disabled:opacity-50"
+                            >
+                                {status === "loading" ? <Loader2 size={16} className="animate-spin" /> : status === "success" ? <Check size={16} className="text-green-500" /> : <ArrowRight size={16} />}
                             </button>
                         </form>
 

@@ -4,6 +4,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { getProduct, updateProduct, getCollections, type Collection } from "@/app/actions/product";
+import { getCategories, type Category } from "@/app/actions/category";
 import { getProductStats } from "@/app/actions/order";
 import { uploadImage } from "@/app/actions/cloudinary";
 import { Save, ArrowLeft, Loader2, Image as ImageIcon, Trash2, Upload, X, Plus } from "lucide-react";
@@ -18,6 +19,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [collections, setCollections] = useState<Collection[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     // Form State
     const [title, setTitle] = useState("");
@@ -31,6 +33,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [media, setMedia] = useState<string[]>([]);
     const [coverImage, setCoverImage] = useState("");
     const [selectedCollection, setSelectedCollection] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [productStyles, setProductStyles] = useState<{ bgText?: { x?: number, y?: number, fontSize?: number, color?: string, fontFamily?: string } }>({});
 
     // Rich Details
     const [details, setDetails] = useState("");
@@ -46,7 +50,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
     useEffect(() => {
         const init = async () => {
-            await Promise.all([loadProduct(), loadCollections(), loadStats()]);
+            await Promise.all([loadProduct(), loadCollections(), loadCategories(), loadStats()]);
         };
         init();
     }, [id]);
@@ -60,6 +64,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         try {
             const data = await getCollections();
             setCollections(data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const loadCategories = async () => {
+        try {
+            const data = await getCategories();
+            setCategories(data);
         } catch (error) {
             console.error(error);
         }
@@ -84,9 +97,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             setMedia(product.media || []);
             setCoverImage(product.cover_image || "");
             setSelectedCollection(product.collection_id || "");
+            setSelectedCategory(product.category_id || "");
             setDetails(product.details || "");
             setFabricCare(product.fabric_care || "");
             setShippingInfo(product.shipping_info || "");
+            setProductStyles(product.styles || {});
 
             if (product.variants) {
                 setVariants(product.variants.map(v => ({
@@ -184,9 +199,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 media,
                 cover_image: coverImage || (media.length > 0 ? media[0] : undefined),
                 collection_id: selectedCollection || undefined, // null for removing
+                category_id: selectedCategory || undefined,
                 details,
                 fabric_care: fabricCare,
                 shipping_info: shippingInfo,
+                styles: productStyles,
                 variants: variants.map(v => ({
                     ...v,
                     id: v.id || crypto.randomUUID(), // Preserve ID or generate new
@@ -247,7 +264,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div className="bg-white dark:bg-black p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
                         <span className="text-xs text-neutral-500 uppercase tracking-widest">Revenue (Est)</span>
-                        <div className="text-2xl font-bold mt-1">${(stats.totalSold * parseFloat(price || "0")).toLocaleString()}</div>
+                        <div className="text-2xl font-bold mt-1">₹{(stats.totalSold * parseFloat(price || "0")).toLocaleString('en-IN')}</div>
                     </div>
                 </div>
 
@@ -267,7 +284,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-neutral-500">Price ($)</label>
+                                <label className="text-sm font-medium text-neutral-500">Price (₹)</label>
                                 <input
                                     type="number"
                                     placeholder="0.00"
@@ -446,6 +463,20 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         </div>
 
                         <div className="space-y-2">
+                            <label className="text-sm font-medium text-neutral-500">Category</label>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 text-sm outline-none"
+                            >
+                                <option value="">None</option>
+                                {categories.map(c => (
+                                    <option key={c.id} value={c.id}>{c.title}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
                             <label className="text-sm font-medium text-neutral-500">Slug (URL)</label>
                             <input
                                 type="text"
@@ -457,15 +488,79 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             <p className="text-xs text-neutral-400">Leave blank to auto-generate.</p>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             <label className="text-sm font-medium text-neutral-500">Background Text</label>
                             <input
                                 type="text"
                                 placeholder="Ex: LIMITED"
                                 value={bgText}
                                 onChange={(e) => setBgText(e.target.value)}
-                                className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 text-sm outline-none"
+                                className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 text-sm outline-none font-display font-bold uppercase mb-4"
                             />
+
+                            {/* Background Text Styles */}
+                            <div className="p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-4">
+                                <span className="text-xs font-bold uppercase text-neutral-500">Background Style</span>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Font Family</label>
+                                        <select
+                                            value={productStyles.bgText?.fontFamily || 'var(--font-inter)'}
+                                            onChange={(e) => setProductStyles({ ...productStyles, bgText: { ...productStyles.bgText, fontFamily: e.target.value } })}
+                                            className="w-full bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-xs outline-none h-8"
+                                        >
+                                            <option value="var(--font-inter)">Inter (Default)</option>
+                                            <option value="var(--font-oswald)">Oswald (Condensed)</option>
+                                            <option value="var(--font-playfair)">Playfair (Serif)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Color</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                className="w-full h-8 cursor-pointer rounded overflow-hidden"
+                                                value={productStyles.bgText?.color || '#000000'}
+                                                onChange={(e) => setProductStyles({ ...productStyles, bgText: { ...productStyles.bgText, color: e.target.value } })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Size (px)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="Auto"
+                                            className="w-full text-xs px-2 py-1 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded outline-none"
+                                            value={productStyles.bgText?.fontSize || ''}
+                                            onChange={(e) => setProductStyles({ ...productStyles, bgText: { ...productStyles.bgText, fontSize: parseInt(e.target.value) || undefined } })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">X Pos</label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            className="w-full text-xs px-2 py-1 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded outline-none"
+                                            value={productStyles.bgText?.x || ''}
+                                            onChange={(e) => setProductStyles({ ...productStyles, bgText: { ...productStyles.bgText, x: parseInt(e.target.value) || 0 } })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-neutral-400 block mb-1">Y Pos</label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            className="w-full text-xs px-2 py-1 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded outline-none"
+                                            value={productStyles.bgText?.y || ''}
+                                            onChange={(e) => setProductStyles({ ...productStyles, bgText: { ...productStyles.bgText, y: parseInt(e.target.value) || 0 } })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-3">

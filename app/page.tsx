@@ -1,6 +1,7 @@
 import { getContent } from "@/app/actions/content";
 // import { getBlogs } from "@/app/actions/blog";
 import { getProducts, getCollections, type Product, type Collection } from "@/app/actions/product";
+import { getCategories, type Category } from "@/app/actions/category";
 import { getGridItems } from "@/app/actions/content";
 import HomeClient from "@/components/home/HomeClient";
 
@@ -51,26 +52,48 @@ export default async function Home() {
 
   const contentMap = Object.fromEntries(contentEntries);
 
+
+  // ... imports
+
+  // ... inside Home function
+
   // --- Resolve Category Showcase Data ---
-  let categoryShowcaseData: (Collection & { products: Product[] })[] = [];
+  let categoryShowcaseData: ((Collection | Category) & { products: Product[] })[] = [];
   try {
+    const showcaseMode = contentMap["home_showcase_mode"]?.value || "collections";
     const featCatJson = contentMap["home_featured_categories"]?.value;
+
     if (featCatJson) {
-      const catIds: string[] = JSON.parse(featCatJson);
+      const ids: string[] = JSON.parse(featCatJson);
 
-      // Fetch collections and their products in parallel
-      // Note: This could be optimized into a single custom SQL query or more efficient fetching logic if scale increases.
-      const showcasePromises = catIds.map(async (id) => {
-        // Find collection in already fetched list to save 1 query
-        const collection = collections.find(c => c.id === id);
-        if (!collection) return null;
+      if (showcaseMode === "categories") {
+        // Fetch Categories
+        // We need to fetch all categories first to filter by ID (or fetch individually)
+        // For efficiency, let's fetch all (usually < 20)
+        const allCategories = await getCategories();
 
-        const products = await getProducts({ collection: id, sort: "newest" });
-        return { ...collection, products: products.slice(0, 4) };
-      });
+        const showcasePromises = ids.map(async (id) => {
+          const category = allCategories.find(c => c.id === id);
+          if (!category) return null;
+          const products = await getProducts({ category: id, sort: "newest" });
+          return { ...category, products: products.slice(0, 4) };
+        });
 
-      const resolved = await Promise.all(showcasePromises);
-      categoryShowcaseData = resolved.filter(Boolean) as (Collection & { products: Product[] })[];
+        const resolved = await Promise.all(showcasePromises);
+        categoryShowcaseData = resolved.filter(Boolean) as (Category & { products: Product[] })[];
+
+      } else {
+        // Fetch Collections (Default)
+        const showcasePromises = ids.map(async (id) => {
+          const collection = collections.find(c => c.id === id);
+          if (!collection) return null;
+          const products = await getProducts({ collection: id, sort: "newest" });
+          return { ...collection, products: products.slice(0, 4) };
+        });
+
+        const resolved = await Promise.all(showcasePromises);
+        categoryShowcaseData = resolved.filter(Boolean) as (Collection & { products: Product[] })[];
+      }
     }
   } catch (e) {
     console.error("Failed to load category showcase", e);

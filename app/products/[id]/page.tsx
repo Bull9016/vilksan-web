@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductActions from "@/components/products/ProductActions";
 import ProductAccordions from "@/components/products/ProductAccordions";
+import ProductDetailsSection from "@/components/products/ProductDetailsSection";
 
 export const dynamic = 'force-dynamic';
 
@@ -60,81 +61,89 @@ export default async function SingleProductPage({ params }: { params: Promise<{ 
     ];
 
     return (
-        <main className="min-h-screen bg-white dark:bg-black text-foreground pt-32 pb-20">
-            <div className="max-w-[1600px] mx-auto px-6 md:px-12 relative z-10">
-                {/* Back Link */}
-                <div className="mb-8">
-                    <Link
-                        href={collection ? `/collections/${collection.slug}` : "/products"}
-                        className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-500 hover:text-black dark:hover:text-white transition-colors"
-                    >
-                        <ArrowLeft size={14} /> {collection ? `Back to ${collection.title}` : "Back to All Products"}
-                    </Link>
-                </div>
+        <main className="min-h-screen bg-neutral-100 dark:bg-black text-foreground pt-36 pb-20">
+            <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
 
-                    {/* Left Column: Description & Details (Sticky) */}
-                    <div className="lg:col-span-3 lg:sticky lg:top-32 order-2 lg:order-1 space-y-8">
-                        <div className="lg:hidden">
-                            <h1 className="text-3xl font-display font-bold leading-tight mb-2">{product.title}</h1>
-                            <p className="text-lg font-mono mb-4">${product.price.toFixed(2)}</p>
-                        </div>
+                    {/* Left Column: Brand/Collection Branding & Desc */}
+                    <div className="lg:col-span-4 lg:sticky lg:top-40 order-2 lg:order-1 flex flex-col justify-center h-full">
+                        <div className="mb-12">
+                            {/* Background Text */}
+                            <h1
+                                className="font-display font-black leading-[0.8] mb-4 tracking-tighter opacity-10 dark:opacity-20 select-none absolute -z-10 truncate max-w-full pointer-events-none"
+                                style={{
+                                    fontSize: product.styles?.bgText?.fontSize ? `${product.styles.bgText.fontSize}px` : '10rem',
+                                    left: product.styles?.bgText?.x ? `${product.styles.bgText.x}px` : '-5rem',
+                                    top: product.styles?.bgText?.y ? `${product.styles.bgText.y}px` : '0',
+                                    color: product.styles?.bgText?.color,
+                                    fontFamily: product.styles?.bgText?.fontFamily || 'var(--font-inter)'
+                                }}
+                            >
+                                {product.bg_text || (collection?.title ? collection.title.split(' ')[0] : "VILKSAN")}
+                            </h1>
 
-                        <div className="prose dark:prose-invert prose-sm">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-4">Description</h3>
-                            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm">
+                            <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tighter mb-4 leading-none relative z-10">
+                                {collection?.title || "VILKSAN"}
+                                <span className="text-brand-500 text-6xl">.</span>
+                            </h2>
+                            <div className="w-20 h-1 bg-black dark:bg-white mb-8"></div>
+
+                            <h1 className="text-2xl font-bold uppercase tracking-widest mb-2">{product.title}</h1>
+                            <p className="text-xl font-mono text-neutral-500 mb-6">₹{product.price.toLocaleString('en-IN')}</p>
+
+                            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm max-w-sm mb-8">
                                 {product.description}
                             </p>
-                        </div>
 
-                        <div className="pt-8 border-t border-neutral-100 dark:border-neutral-800">
-                            <ProductAccordions items={accordionItems} />
+                            {/* Details Toggle Section */}
+                            <div className="mt-8">
+                                <ProductDetailsSection items={accordionItems} />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Center Column: Media Gallery (Scrollable) */}
-                    <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                    {/* Center Column: Hero Image Gallery */}
+                    <div className="lg:col-span-4 order-1 lg:order-2 space-y-4">
                         {product.media && product.media.length > 0 ? (
-                            product.media.map((img, idx) => (
-                                <div key={idx} className="aspect-[3/4] relative bg-neutral-100 dark:bg-neutral-900 w-full">
+                            product.media.map((url, index) => (
+                                <div key={index} className="aspect-[3/4] relative bg-neutral-200 dark:bg-neutral-900 w-full overflow-hidden shadow-2xl">
                                     <Image
-                                        src={img}
-                                        alt={`${product.title} ${idx + 1}`}
+                                        src={url}
+                                        alt={`${product.title} - View ${index + 1}`}
                                         fill
                                         className="object-cover"
-                                        priority={idx === 0}
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        priority={index === 0}
+                                        sizes="(max-width: 768px) 100vw, 33vw"
                                     />
                                 </div>
                             ))
                         ) : (
-                            <div className="aspect-[3/4] relative bg-neutral-100 dark:bg-neutral-900 w-full flex items-center justify-center text-neutral-400">
+                            <div className="aspect-[3/4] relative bg-neutral-200 dark:bg-neutral-900 w-full overflow-hidden shadow-2xl flex items-center justify-center text-neutral-400">
                                 No Image
                             </div>
                         )}
                     </div>
 
-                    {/* Right Column: Actions (Sticky) */}
-                    <div className="lg:col-span-3 lg:sticky lg:top-32 order-3 lg:order-3 space-y-8">
-                        <div className="hidden lg:block mb-8">
-                            {collection && (
-                                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2 block">
-                                    {collection.title}
-                                </span>
-                            )}
-                            <h1 className="text-5xl font-display font-bold leading-none mb-4 tracking-tight">
-                                {product.title}
-                            </h1>
-                            <p className="text-xl font-mono">${product.price.toFixed(2)}</p>
+                    {/* Right Column: Actions Only */}
+                    <div className="lg:col-span-4 lg:sticky lg:top-40 order-3 lg:order-3 space-y-12 pt-12">
+                        <div>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-2">
+                                Configuration
+                            </h3>
+                            <ProductActions product={product} variants={product.variants} />
                         </div>
-
-                        <ProductActions product={product} variants={product.variants} />
                     </div>
                 </div>
 
                 {/* Recommended Products */}
-                <div className="mt-32">
+                <div className="mt-40 border-t border-neutral-200 dark:border-neutral-800 pt-20">
+                    <div className="flex items-center justify-between mb-12">
+                        <div>
+                            <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2 block">You might also like</span>
+                            <h2 className="text-4xl font-display font-bold">Suggested for you</h2>
+                        </div>
+                    </div>
                     <RecommendedProducts products={recommendedProducts} />
                 </div>
             </div>

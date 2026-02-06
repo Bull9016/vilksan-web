@@ -5,15 +5,14 @@ import { EditableImage } from "@/components/ui/EditableImage";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { X, ArrowRight, Loader2, Check } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import HeroCarousel from "./HeroCarousel";
 import CategoryShowcase from "./CategoryShowcase";
 import FeaturedGrid from "./FeaturedGrid";
 import type { Blog } from "@/app/actions/blog";
 import type { Product, Collection } from "@/app/actions/product";
 import type { GridItem } from "@/app/actions/content";
-import { subscribeToNewsletter } from "@/app/actions/newsletter";
-import { toast } from "sonner";
+import type { Category } from "@/app/actions/category";
 
 interface ContentMap {
     [key: string]: { value: string; style?: any };
@@ -30,52 +29,16 @@ export default function HomeClient({
     latestBlog: Blog | null;
     newArrivals: Product[];
     collections: Collection[];
-    categoryShowcase?: (Collection & { products: Product[] })[];
+    categoryShowcase?: ((Collection | Category) & { products: Product[] })[];
     gridItems?: GridItem[];
     blogs?: Blog[];
 }) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [showNotification, setShowNotification] = useState(true);
-    const [email, setEmail] = useState("");
-    const [name, setName] = useState("");
-    const [subscribing, setSubscribing] = useState(false);
-    const [subscribed, setSubscribed] = useState(false);
-
-    const handleSubscribe = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
-        setSubscribing(true);
-        try {
-            const res = await subscribeToNewsletter(email, name);
-            if (res.success) {
-                setSubscribed(true);
-                toast.success(res.message);
-                setEmail("");
-                setName("");
-            }
-        } catch (error) {
-            toast.error("Failed to subscribe. Please try again.");
-        } finally {
-            setSubscribing(false);
-        }
-    };
-
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end start"]
-    });
-
-    const yText = useTransform(scrollYProgress, [0, 1], [0, 150]);
-
-    const textPosition = content["home_hero_bg_text"]?.style?.layer || content["home_hero_text_position"]?.value || "behind";
-    const zIndexClass = (textPosition === "over" || textPosition === "front") ? "z-30" : "z-0";
-
     return (
         <main className="min-h-screen bg-neutral-100 dark:bg-neutral-900 text-foreground overflow-x-hidden relative">
 
             {/* Hero Section - Carousel */}
-            <div ref={containerRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-neutral-100 dark:bg-neutral-900">
-                <HeroCarousel content={content} scrollY={yText} />
+            <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+                <HeroCarousel content={content} />
             </div>
 
             {/* Category Showcase (New Feature) */}
@@ -97,8 +60,8 @@ export default function HomeClient({
                             {newArrivals.map(product => (
                                 <Link key={product.id} href={`/products/${product.slug || product.id}`} className="group cursor-pointer">
                                     <div className="aspect-[3/4] relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden mb-4">
-                                        {product.media && product.media[0] && (
-                                            <img src={product.media[0]} alt={product.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
+                                        {(product.cover_image || (product.media && product.media[0])) && (
+                                            <img src={product.cover_image || product.media[0]} alt={product.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
                                         )}
                                         {product.stock <= 0 && (
                                             <div className="absolute top-2 right-2 bg-neutral-900 text-white text-[10px] uppercase font-bold px-2 py-1">
@@ -107,7 +70,7 @@ export default function HomeClient({
                                         )}
                                     </div>
                                     <h3 className="font-bold text-lg mb-1">{product.title}</h3>
-                                    <p className="text-neutral-500 font-mono text-sm">${product.price.toFixed(2)}</p>
+                                    <p className="text-neutral-500 font-mono text-sm">₹{product.price.toLocaleString('en-IN')}</p>
                                 </Link>
                             ))}
                         </div>
@@ -226,53 +189,7 @@ export default function HomeClient({
                 </div>
             </section>
 
-            {/* Section 5: Newsletter */}
-            <section className="py-24 px-6 md:px-12 bg-white dark:bg-black text-center border-t border-neutral-200 dark:border-neutral-800">
-                <div className="max-w-xl mx-auto">
-                    <EditableText
-                        contentKey="home_newsletter_title"
-                        initialValue={content["home_newsletter_title"]?.value || "Join the list"}
-                        initialStyle={content["home_newsletter_title"]?.style}
-                        as="h2"
-                        className="font-display text-3xl mb-4 font-bold"
-                    />
-                    <EditableText
-                        contentKey="home_newsletter_desc"
-                        initialValue={content["home_newsletter_desc"]?.value || "Sign up for exclusive access to new drops and editorial content."}
-                        initialStyle={content["home_newsletter_desc"]?.style}
-                        as="p"
-                        className="text-neutral-500 mb-8"
-                    />
-                    <form onSubmit={handleSubscribe} className="flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <input
-                                type="text"
-                                placeholder="Your Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                disabled={subscribed || subscribing}
-                                className="flex-1 bg-transparent border-b border-neutral-300 dark:border-neutral-700 py-3 outline-none focus:border-black dark:focus:border-white transition-colors disabled:opacity-50 text-sm"
-                            />
-                            <input
-                                type="email"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={subscribed || subscribing}
-                                className="flex-1 bg-transparent border-b border-neutral-300 dark:border-neutral-700 py-3 outline-none focus:border-black dark:focus:border-white transition-colors disabled:opacity-50 text-sm"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={subscribed || subscribing}
-                            className="bg-black text-white dark:bg-white dark:text-black px-8 py-3 mt-4 text-sm font-bold uppercase tracking-widest hover:opacity-80 transition-opacity self-center flex items-center gap-2 disabled:opacity-50 w-full md:w-auto justify-center"
-                        >
-                            {subscribing ? <Loader2 className="animate-spin" size={14} /> : subscribed ? <Check size={14} /> : null}
-                            {subscribed ? "Subscribed" : "Subscribe"}
-                        </button>
-                    </form>
-                </div>
-            </section>
+
         </main>
     );
 }

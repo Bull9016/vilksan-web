@@ -8,10 +8,11 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product, Collection } from "@/app/actions/product";
+import type { Category } from "@/app/actions/category";
 import { cn } from "@/lib/utils";
 
 interface CategoryShowcaseProps {
-    categories: (Collection & { products: Product[] })[];
+    categories: ((Collection | Category) & { products: Product[] })[];
 }
 
 export default function CategoryShowcase({ categories }: CategoryShowcaseProps) {
@@ -75,9 +76,9 @@ export default function CategoryShowcase({ categories }: CategoryShowcaseProps) 
                                         className="group block"
                                     >
                                         <div className="aspect-[3/4] relative bg-white dark:bg-neutral-900 overflow-hidden mb-4">
-                                            {product.media && product.media[0] ? (
+                                            {(product.cover_image || (product.media && product.media[0])) ? (
                                                 <Image
-                                                    src={product.media[0]}
+                                                    src={product.cover_image || product.media[0]}
                                                     alt={product.title}
                                                     fill
                                                     className="object-cover group-hover:scale-105 transition-transform duration-700"

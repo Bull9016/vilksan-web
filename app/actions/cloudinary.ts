@@ -12,10 +12,7 @@ export async function uploadImage(formData: FormData): Promise<{ secure_url?: st
 
     // DEBUG LOGS (Temporary) 
     // Console logs appear in your terminal where `npm run dev` is running
-    console.log("Cloudinary Upload Debug:");
-    console.log("Cloud Name:", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-    console.log("API Key:", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY?.slice(0, 5) + "...");
-    console.log("API Secret (First 5 chars):", process.env.CLOUDINARY_API_SECRET?.slice(0, 5) + "...");
+
 
     const file = formData.get("file") as File;
     const folder = (formData.get("folder") as string) || "vilksan-uploads";

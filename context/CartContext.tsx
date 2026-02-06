@@ -50,7 +50,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             setUser(user);
 
             // Listen for auth changes
-            supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
 
@@ -62,6 +62,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     loadRemoteCart(currentUser.id, supabase);
                 }
             });
+
+            return () => {
+                subscription.unsubscribe();
+            };
         };
         init();
     }, []);

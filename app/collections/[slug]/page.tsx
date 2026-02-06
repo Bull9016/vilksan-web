@@ -34,7 +34,7 @@ export default async function SingleCollectionPage({ params }: { params: Promise
 
                 {/* Hero / Header */}
                 <div className="mb-24">
-                    <div className="max-w-4xl">
+                    <div className="max-w-4xl mb-12">
                         <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-4 block">Collection</span>
                         <h1 className="text-5xl md:text-8xl font-display font-bold leading-none mb-8">
                             {collection.title}
@@ -43,6 +43,18 @@ export default async function SingleCollectionPage({ params }: { params: Promise
                             {collection.description}
                         </p>
                     </div>
+
+                    {collection.image && (
+                        <div className="relative w-full aspect-[21/9] overflow-hidden bg-neutral-100 dark:bg-neutral-900 rounded-lg">
+                            <Image
+                                src={collection.image}
+                                alt={collection.title}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Products Grid */}
@@ -55,9 +67,9 @@ export default async function SingleCollectionPage({ params }: { params: Promise
                         {products.map((product) => (
                             <Link key={product.id} href={`/products/${product.slug || product.id}`} className="group cursor-pointer block">
                                 <div className="aspect-[3/4] relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 mb-4">
-                                    {product.media && product.media[0] && (
+                                    {(product.cover_image || (product.media && product.media[0])) && (
                                         <Image
-                                            src={product.media[0]}
+                                            src={product.cover_image || product.media[0]}
                                             alt={product.title}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -65,6 +77,13 @@ export default async function SingleCollectionPage({ params }: { params: Promise
                                     )}
                                     {/* Overlay Tags */}
                                     <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                                        {/* DEBUG OVERLAY */}
+                                        <div className="bg-black/80 text-white text-[8px] p-1 max-w-[100px] break-all z-50">
+                                            CF: {product.cover_image ? 'YES' : 'NO'}<br />
+                                            {product.cover_image?.slice(-10) || 'N/A'}<br />
+                                            M0: {product.media?.[0]?.slice(-10) || 'N/A'}
+                                        </div>
+
                                         {product.stock <= 0 && (
                                             <span className="bg-white/90 dark:bg-black/90 text-black dark:text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
                                                 Sold Out
@@ -84,7 +103,7 @@ export default async function SingleCollectionPage({ params }: { params: Promise
                                         </h3>
                                         <p className="text-sm text-neutral-500 line-clamp-1">{product.description}</p>
                                     </div>
-                                    <p className="font-mono text-sm">${product.price.toFixed(2)}</p>
+                                    <p className="font-mono text-sm">₹{product.price.toLocaleString('en-IN')}</p>
                                 </div>
                             </Link>
                         ))}

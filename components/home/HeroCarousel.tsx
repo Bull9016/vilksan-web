@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence, MotionValue } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { EditableText } from "@/components/ui/EditableText";
 import { EditableImage } from "@/components/ui/EditableImage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -24,10 +24,11 @@ interface HeroSlide {
 
 interface HeroCarouselProps {
     content: { [key: string]: { value: string; style?: any } };
-    scrollY: MotionValue<number>;
 }
 
-export default function HeroCarousel({ content, scrollY }: HeroCarouselProps) {
+export default function HeroCarousel({ content }: HeroCarouselProps) {
+    const { scrollY } = useScroll();
+    const yText = useTransform(scrollY, [0, 500], [0, 150]);
     const [slides, setSlides] = useState<HeroSlide[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -89,7 +90,7 @@ export default function HeroCarousel({ content, scrollY }: HeroCarouselProps) {
     const zIndexClass = (textPosition === "over" || textPosition === "front") ? "z-30" : "z-0";
 
     return (
-        <>
+        <div className="w-full h-full relative">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentSlide.id}
@@ -99,69 +100,130 @@ export default function HeroCarousel({ content, scrollY }: HeroCarouselProps) {
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0 w-full h-full flex items-center justify-center"
                 >
-                    {/* Layer 1: Huge Background Text */}
+                    {/* Layer 1: Background Elements (Behind Image) */}
                     <motion.div
-                        style={{ y: scrollY }}
-                        className={`absolute ${zIndexClass} select-none w-full text-center top-[15%] md:top-[5%]`}
+                        style={{ y: yText }}
+                        className={`absolute ${zIndexClass} select-none w-full text-center top-[10%] md:top-0 h-full flex items-center justify-center`}
                     >
                         <h1
-                            className="text-[25vw] leading-none font-bold text-neutral-300 dark:text-neutral-800 tracking-tighter"
+                            className="text-[28vw] leading-none font-bold text-neutral-200 dark:text-neutral-800 tracking-tighter opacity-80"
                             style={{
                                 fontSize: currentSlide.styles.bgText?.fontSize ? `${currentSlide.styles.bgText.fontSize}px` : undefined,
                                 transform: `rotate(${currentSlide.styles.bgText?.tilt || 0}deg) translate(${currentSlide.styles.bgText?.x || 0}px, ${currentSlide.styles.bgText?.y || 0}px)`,
-                                color: currentSlide.styles.bgText?.color
+                                color: currentSlide.styles.bgText?.color,
+                                fontFamily: currentSlide.styles.bgText?.fontFamily || 'var(--font-inter)',
                             }}
                         >
                             {currentSlide.bgText}
                         </h1>
-                    </motion.div>
 
-                    {/* Layer 2: Main Image */}
-                    <div className="relative z-10 w-full max-w-7xl px-4 mt-20 md:mt-40 pointer-events-none">
-                        <div className="pointer-events-auto">
-                            {currentSlide.image && (
-                                <EditableImage
-                                    contentKey={`slide_img_${currentSlide.id}`} // Dummy key, handled by carousel state usually but re-using component for display
-                                    readOnly={true} // Important: We edit in Admin, not here for carousel
-                                    src={currentSlide.image}
-                                    initialStyle={currentSlide.styles.image}
-                                    alt="Hero Image"
-                                    width={1600}
-                                    height={900}
-                                    className="w-full h-auto object-contain drop-shadow-2xl"
-                                    priority
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Layer 3: Overlay Content */}
-                    <div className="absolute bottom-10 left-6 md:left-12 z-20 max-w-md">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <span
-                                className="inline-block border border-black dark:border-white px-2 py-0.5 text-xs text-black dark:text-white uppercase tracking-widest mb-4"
+                        {/* Optional: Render Subline Behind if layer='behind' */}
+                        {currentSlide.styles.subline?.layer === 'behind' && (
+                            <h2
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter mix-blend-overlay opacity-50 whitespace-nowrap"
                                 style={{
-                                    transform: `translate(0, ${currentSlide.styles.badge?.y || 0}px)`,
+                                    color: currentSlide.styles.subline?.color,
+                                    fontSize: currentSlide.styles.subline?.fontSize ? `${currentSlide.styles.subline.fontSize}px` : undefined,
+                                    transform: `translate(${currentSlide.styles.subline?.x || 0}px, ${currentSlide.styles.subline?.y || 0}px)`,
+                                    fontFamily: 'var(--font-oswald)'
+                                }}
+                                dangerouslySetInnerHTML={{ __html: currentSlide.subline?.replace(/\n/g, "<br/>") || "" }}
+                            />
+                        )}
+
+                        {/* Optional: Render Badge Behind if layer='behind' */}
+                        {currentSlide.styles.badge?.layer === 'behind' && currentSlide.badge && (
+                            <span
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 inline-block border border-black dark:border-white px-6 py-2 text-xs font-bold uppercase"
+                                style={{
+                                    fontSize: currentSlide.styles.badge?.fontSize ? `${currentSlide.styles.badge.fontSize}px` : undefined,
+                                    transform: `translate(${currentSlide.styles.badge?.x || 0}px, ${currentSlide.styles.badge?.y || 0}px)`,
                                     color: currentSlide.styles.badge?.color,
                                     borderColor: currentSlide.styles.badge?.color
                                 }}
                             >
                                 {currentSlide.badge}
                             </span>
-                            <p
-                                className="text-xs md:text-sm text-neutral-500 uppercase tracking-widest leading-relaxed"
-                                style={{
-                                    transform: `translate(0, ${currentSlide.styles.subline?.y || 0}px)`,
-                                    color: currentSlide.styles.subline?.color
-                                }}
+                        )}
+                    </motion.div>
+
+                    {/* Layer 2: Main Image */}
+                    <div className="relative z-10 w-full max-w-7xl px-4 h-full flex items-center justify-center pointer-events-none">
+                        <div className="pointer-events-auto w-full md:w-[60%] lg:w-[50%] h-[70%] relative">
+                            {currentSlide.image && (
+                                <EditableImage
+                                    contentKey={`slide_img_${currentSlide.id}`}
+                                    readOnly={true}
+                                    src={currentSlide.image}
+                                    initialStyle={currentSlide.styles.image}
+                                    alt="Hero Image"
+                                    width={1600}
+                                    height={900}
+                                    className="w-full h-full object-contain drop-shadow-2xl"
+                                    priority
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Layer 3: Foreground Text Overlay (In Front) */}
+                    <div className="absolute inset-0 z-20 flex flex-col justify-center items-center pointer-events-none">
+                        <div className="max-w-7xl w-full px-6 md:px-12 relative h-full">
+                            {/* Top Right Menu / Date Indicators (Decoration) */}
+                            <div className="absolute top-12 right-6 md:right-12 flex flex-col items-end border-r border-black dark:border-white pr-4 gap-2">
+                                <span className="text-xs font-bold">0{currentIndex + 1}/0{slides.length}</span>
+                                <div className="h-4 w-[1px] bg-black dark:bg-white/50"></div>
+                            </div>
+
+                            {/* Center-Left Content */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.2, duration: 0.8 }}
+                                className="absolute top-1/2 -translate-y-1/2 left-4 md:left-24 w-full md:w-auto"
                             >
-                                {currentSlide.subline}
-                            </p>
-                        </motion.div>
+                                {/* Default behavior: Render Subline Front unless layer='behind' */}
+                                {(currentSlide.styles.subline?.layer !== 'behind') && (
+                                    <h2
+                                        className="text-5xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter text-black dark:text-white mix-blend-exclusion"
+                                        style={{
+                                            color: currentSlide.styles.subline?.color,
+                                            fontSize: currentSlide.styles.subline?.fontSize ? `${currentSlide.styles.subline.fontSize}px` : undefined,
+                                            transform: `translate(${currentSlide.styles.subline?.x || 0}px, ${currentSlide.styles.subline?.y || 0}px)`,
+                                            fontFamily: 'var(--font-oswald)'
+                                        }}
+                                        dangerouslySetInnerHTML={{
+                                            // Allow breaking text (e.g. "ADDICTED<br>TO<br>FASHION")
+                                            __html: currentSlide.subline?.replace(/\n/g, "<br/>") || ""
+                                        }}
+                                    />
+                                )}
+
+                                {/* Default behavior: Render Badge Front unless layer='behind' */}
+                                {(currentSlide.styles.badge?.layer !== 'behind') && currentSlide.badge && (
+                                    <div className="mt-8 relative pl-12" style={{ transform: `translate(${currentSlide.styles.badge?.x || 0}px, ${currentSlide.styles.badge?.y || 0}px)` }}>
+                                        {/* Decorative Line matches badge y not x */}
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-[1px] bg-black dark:bg-white"></div>
+                                        <span
+                                            className="inline-block border border-black dark:border-white px-6 py-2 text-xs font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all pointer-events-auto cursor-pointer"
+                                            style={{
+                                                fontSize: currentSlide.styles.badge?.fontSize ? `${currentSlide.styles.badge.fontSize}px` : undefined,
+                                                color: currentSlide.styles.badge?.color,
+                                                borderColor: currentSlide.styles.badge?.color
+                                            }}
+                                        >
+                                            {currentSlide.badge}
+                                        </span>
+                                    </div>
+                                )}
+                            </motion.div>
+
+                            {/* Scroll Indicator */}
+                            <div className="absolute bottom-12 left-6 md:left-12 flex items-center gap-4 -rotate-90 origin-left">
+                                <span className="text-[10px] uppercase font-bold tracking-widest">Scroll</span>
+                                <div className="w-12 h-[1px] bg-black dark:bg-white"></div>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
             </AnimatePresence>
@@ -194,6 +256,6 @@ export default function HeroCarousel({ content, scrollY }: HeroCarouselProps) {
                     </div>
                 </>
             )}
-        </>
+        </div>
     );
 }

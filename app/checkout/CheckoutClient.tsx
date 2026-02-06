@@ -96,7 +96,7 @@ export default function CheckoutClient({ user, initialAddresses }: { user: any, 
                                 <p className="text-xs text-neutral-500">
                                     {item.size} / {item.color} x {item.quantity}
                                 </p>
-                                <p className="text-sm font-mono mt-1">${(item.price * item.quantity).toFixed(2)}</p>
+                                <p className="text-sm font-mono mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                         </div>
                     ))}
@@ -105,7 +105,7 @@ export default function CheckoutClient({ user, initialAddresses }: { user: any, 
                 <div className="space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                     <div className="flex justify-between text-sm">
                         <span className="text-neutral-500">Subtotal</span>
-                        <span className="font-mono">${subtotal.toFixed(2)}</span>
+                        <span className="font-mono">₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                         <span className="text-neutral-500">Shipping</span>
@@ -113,7 +113,7 @@ export default function CheckoutClient({ user, initialAddresses }: { user: any, 
                     </div>
                     <div className="flex justify-between text-lg font-bold pt-2 border-t border-neutral-200 dark:border-neutral-800">
                         <span>Total</span>
-                        <span className="font-mono">${subtotal.toFixed(2)}</span>
+                        <span className="font-mono">₹{subtotal.toFixed(2)}</span>
                     </div>
                 </div>
 

@@ -17,6 +17,10 @@ export type Blog = {
     created_at: string;
 };
 
+import { isAuthenticated } from "./auth";
+
+// ... (existing getBlogs and getBlog remain same)
+
 export async function getBlogs(onlyPublished = false) {
     let query = supabase.from("blogs").select("*").order("created_at", { ascending: false });
 
@@ -36,18 +40,21 @@ export async function getBlog(id: string) {
 }
 
 export async function createBlog(blog: Partial<Blog>) {
+    if (!await isAuthenticated()) throw new Error("Unauthorized");
     const { data, error } = await supabase.from("blogs").insert([blog]).select().single();
     if (error) throw new Error(error.message);
     return data;
 }
 
 export async function updateBlog(id: string, updates: Partial<Blog>) {
+    if (!await isAuthenticated()) throw new Error("Unauthorized");
     const { data, error } = await supabase.from("blogs").update(updates).eq("id", id).select().single();
     if (error) throw new Error(error.message);
     return data;
 }
 
 export async function deleteBlog(id: string) {
+    if (!await isAuthenticated()) throw new Error("Unauthorized");
     const { error } = await supabase.from("blogs").delete().eq("id", id);
     if (error) throw new Error(error.message);
 }
