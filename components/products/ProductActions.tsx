@@ -72,7 +72,18 @@ export default function ProductActions({ product, variants }: { product: Product
                 color: selectedColor || undefined
             };
 
-            await createOrder([item], product.price);
+            // Provide dummy address for "Buy Now" (should ideally redirect to checkout)
+            const dummyAddress = {
+                full_name: "Guest User",
+                line1: "123 Main St",
+                city: "New York",
+                state: "NY",
+                zip: "10001",
+                country: "US",
+                phone: "555-0123"
+            };
+
+            await createOrder([item], product.price, dummyAddress);
             toast.success("Order placed successfully!");
             // In a real app we'd redirect to success page
         } catch (error) {
